@@ -41,6 +41,7 @@ class GMTMasterView extends WatchUi.WatchFace {
         drawMinuteTicks(dc);
         drawHourMarkers(dc);
         drawDateWindow(dc, info.day);
+        drawDayBox(dc, info.day_of_week);
         drawHands(dc, clockTime);
         drawCenterDot(dc);
     }
@@ -98,11 +99,10 @@ class GMTMasterView extends WatchUi.WatchFace {
 
     private function drawHourMarkers(dc as Graphics.Dc) as Void {
         for (var i = 0; i < 12; i++) {
-            if (i == 3) { continue; }
             var angle = i * (2.0 * Math.PI / 12.0);
             if (i == 0) {
                 drawTriangleMarker(dc, angle);
-            } else if (i == 6 || i == 9) {
+            } else if (i == 3 || i == 6 || i == 9) {
                 drawRectMarker(dc, angle);
             } else {
                 drawCircleMarker(dc, angle);
@@ -113,7 +113,7 @@ class GMTMasterView extends WatchUi.WatchFace {
     // 12 o'clock — downward-pointing triangle, base touches 59/1 minute marks
     private function drawTriangleMarker(dc as Graphics.Dc, angle as Float) as Void {
         var outerR = mR * 0.855;   // just touching 59/1 minute marks
-        var innerR = mR * 0.560;   // apex
+        var innerR = mR * 0.619;   // apex — 2/3 height + 20% restored
         var halfW  = mR * 0.100;   // wide base
         var sa = Math.sin(angle);
         var ca = Math.cos(angle);
@@ -133,8 +133,8 @@ class GMTMasterView extends WatchUi.WatchFace {
 
     // 6 and 9 o'clock — rectangular bar (~50% more area)
     private function drawRectMarker(dc as Graphics.Dc, angle as Float) as Void {
-        var outerR = mR * 0.822;   // ~4px gap from minute ticks
-        var innerR = mR * 0.638;   // keep proportional length, shifted out
+        var outerR = mR * 0.800;   // pulled inward to avoid dial edge
+        var innerR = mR * 0.616;   // proportional
         var halfW  = mR * 0.050;   // wider for more area
         var sa = Math.sin(angle);
         var ca = Math.cos(angle);
@@ -181,8 +181,8 @@ class GMTMasterView extends WatchUi.WatchFace {
     // -------------------------------------------------------------------------
 
     private function drawDateWindow(dc as Graphics.Dc, day as Number) as Void {
-        var dCx = (mCx + mR * 0.735).toNumber();
-        var dCy = mCy;
+        var dCx = mCx;
+        var dCy = (mCy + mR * 0.500).toNumber() - 15;
         var dW  = (mR * 0.270).toNumber();  // fixed width — fits largest 2-digit date
         var dH  = (mR * 0.250).toNumber();  // taller so sides are clearly rectangular
         var dX  = dCx - dW / 2;
@@ -210,6 +210,91 @@ class GMTMasterView extends WatchUi.WatchFace {
     }
 
     // -------------------------------------------------------------------------
+    // Day-of-week box — between triangle and center, upper dial
+    // -------------------------------------------------------------------------
+
+    private function drawDayBox(dc as Graphics.Dc, dayOfWeek as Number) as Void {
+        var days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY",
+                    "THURSDAY", "FRIDAY", "SATURDAY"];
+
+        var idx = dayOfWeek - 1;
+        if (idx < 0 || idx > 6) { idx = 0; }
+
+        var label    = days[idx];
+        var n        = label.length();
+        var arcR     = mR * 0.780;         // doubled radius = gentler curve
+        var arcCy    = mCy + mR * 0.390 - 8;   // arc center below text so curve is gentle
+        var spacing  = 3.0;                // px between characters
+        var fontBig  = Graphics.FONT_TINY;
+        var fontSm   = Graphics.FONT_XTINY;
+        var hBig     = dc.getFontHeight(fontBig).toFloat();
+        var hSm      = dc.getFontHeight(fontSm).toFloat();
+        var deltaR   = (hBig - hSm) / 2.0;  // radial offset to bias big/small to their rules
+
+        // Measure each character with its respective font
+        var charWidths = new[n];
+        var totalW = 0.0;
+        for (var i = 0; i < n; i++) {
+            var fnt = (i == 0) ? fontBig : fontSm;
+            var w = dc.getTextWidthInPixels(label.substring(i, i + 1), fnt);
+            charWidths[i] = w;
+            if (i > 0) { totalW += spacing; }
+            totalW += w.toFloat();
+        }
+
+        // Angular span of the text, rules extend 10px beyond each end
+        var totalAngle  = totalW / arcR;
+        var startAngle  = -(totalAngle / 2.0);
+        var ruleExtra   = 10.0 / arcR;
+        var ruleStart   = startAngle - ruleExtra;
+        var ruleSpan    = totalAngle + ruleExtra * 2.0;
+
+        // Stainless arc rules: outer (toward bezel) and inner (toward center)
+        var rOuter      = arcR + hBig / 2.0 + 2.0;
+        var rInner      = arcR - hBig / 2.0 - 2.0;
+        var ruleSpanOut  = ruleSpan * 0.88;                      // outer rule = 88% of inner
+        var ruleStartOut = ruleStart + (ruleSpan - ruleSpanOut) / 2.0;  // centered
+        var steps       = 24;
+        dc.setColor(0xA8A8A0, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(1);
+        for (var s = 0; s < steps; s++) {
+            var a1o = ruleStartOut + ruleSpanOut * s.toFloat()       / steps.toFloat();
+            var a2o = ruleStartOut + ruleSpanOut * (s + 1).toFloat() / steps.toFloat();
+            dc.drawLine(
+                (mCx + rOuter * Math.sin(a1o)).toNumber(),
+                (arcCy - rOuter * Math.cos(a1o)).toNumber(),
+                (mCx + rOuter * Math.sin(a2o)).toNumber(),
+                (arcCy - rOuter * Math.cos(a2o)).toNumber()
+            );
+            var a1i = ruleStart + ruleSpan * s.toFloat()       / steps.toFloat();
+            var a2i = ruleStart + ruleSpan * (s + 1).toFloat() / steps.toFloat();
+            dc.drawLine(
+                (mCx + rInner * Math.sin(a1i)).toNumber(),
+                (arcCy - rInner * Math.cos(a1i)).toNumber(),
+                (mCx + rInner * Math.sin(a2i)).toNumber(),
+                (arcCy - rInner * Math.cos(a2i)).toNumber()
+            );
+        }
+
+        // Draw characters: first letter biased toward outer rule, rest toward inner
+        dc.setColor(0xE8E8DC, Graphics.COLOR_TRANSPARENT);
+        var curAngle = startAngle;
+        for (var i = 0; i < n; i++) {
+            var charW    = charWidths[i].toFloat();
+            var midAngle = curAngle + charW / (2.0 * arcR);
+            var r        = (i == 0) ? arcR : arcR - deltaR;
+            var cx       = (mCx + r * Math.sin(midAngle)).toNumber();
+            var cy       = (arcCy - r * Math.cos(midAngle)).toNumber();
+            var fnt      = (i == 0) ? fontBig : fontSm;
+
+            dc.drawText(cx, cy, fnt, label.substring(i, i + 1),
+                Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+
+            curAngle += (charW + spacing) / arcR;
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Hands
     // -------------------------------------------------------------------------
 
@@ -228,11 +313,11 @@ class GMTMasterView extends WatchUi.WatchFace {
         var ca = Math.cos(angle);
         var sa = Math.sin(angle);
 
-        var shaftHW   = (mR * 0.042).toNumber();   // shaft half-width (wider for visible border)
+        var shaftHW   = (mR * 0.048).toNumber();   // shaft half-width (15% thicker)
         var circDist  = (mR * 0.355).toNumber();   // circle center from watch center
         var circR     = (mR * 0.068).toNumber();   // Mercedes circle radius
-        var triTip    = (mR * 0.490).toNumber();   // arrowhead tip distance from center
-        var triHW     = (mR * 0.026).toNumber();   // arrowhead half-width at base
+        var triTip    = (mR * 0.820).toNumber() - 45;   // arrowhead tip — 15% longer again
+        var triHW     = (mR * 0.032).toNumber();   // arrowhead half-width at base
         var shaftTopY = circDist - circR;           // shaft reaches bottom edge of circle
 
         // --- Shaft (starts at center, no tail) ---
@@ -304,9 +389,8 @@ class GMTMasterView extends WatchUi.WatchFace {
 
     private function drawMinuteHand(dc as Graphics.Dc, angle as Float) as Void {
         // Rolex Maxi minute hand: wide body, tapers to a pointed sword tip
-        var tip  = (mR * 0.820).toNumber();
-        var tail = (mR * 0.175).toNumber();
-        var hw   = (mR * 0.046).toNumber();  // thickened for visible steel border
+        var tip  = (mR * 0.775).toNumber();   // 5% longer
+        var hw   = (mR * 0.034).toNumber();  // 10% narrower
         var lw   = hw - 3;
 
         // Outer steel — starts at center, narrows into sword tip
@@ -344,10 +428,10 @@ class GMTMasterView extends WatchUi.WatchFace {
     private function drawSecondHand(dc as Graphics.Dc, angle as Float) as Void {
         // Structure: short tail ← [pivot circle] → line → [lollipop circle] → line → tip
         // Lollipop sits near the 6 o'clock rectangular marker radial distance
-        var tailLen  = mR * 0.180;              // short counterbalance
+        var tailLen  = mR * 0.171;              // short counterbalance (5% shorter)
         var lollDist = mR * 0.620;              // lollipop center (near inner edge of 6/9 markers)
-        var lollR    = (mR * 0.048).toNumber(); // lollipop radius
-        var tipLen   = mR * 0.900;              // tip extends almost to outer edge
+        var lollR    = (mR * 0.030).toNumber(); // lollipop radius
+        var tipLen   = mR * 0.855;              // tip (5% shorter)
         var pivotR   = (mR * 0.028).toNumber(); // small pivot circle at center
         var sa = Math.sin(angle);
         var ca = Math.cos(angle);
@@ -359,7 +443,7 @@ class GMTMasterView extends WatchUi.WatchFace {
         var lollX = (mCx + lollDist * sa).toNumber();
         var lollY = (mCy - lollDist * ca).toNumber();
 
-        var tailCircR = (mR * 0.038).toNumber();  // circle at tail end
+        var tailCircR = (mR * 0.027).toNumber();  // 80% area of lollipop circle
 
         // Shadow
         dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);

@@ -37,27 +37,57 @@ Marker positions: `x = cx + r*sin(angle)`, `y = cy - r*cos(angle)`
 ### Text background
 `dc.setColor(fg, bg)` — the second argument paints a background rectangle behind text characters. For text drawn inside a white box, always use `Graphics.COLOR_TRANSPARENT` as the background; otherwise single-digit numbers produce a narrower white rectangle that creates a visible step artifact.
 
+### AffineTransform / setTransform not available
+`dc.setTransform()` and `dc.clearTransform()` are undefined in this SDK version despite being documented for API 3.3+. Do not use them. For arc text, position characters along the arc without rotation (upright characters, arc-positioned centers).
+
 ### manifest.xml
 - Use `minApiLevel`, not `minSdkVersion`
 - `launcherIcon` must reference a drawable: `launcherIcon="@Drawables.LauncherIcon"`
 - Launcher icon must be a 65x65 PNG in `resources/images/`
 - `<iq:barrels/>` must be present even if empty
 
-## Design Constants (at mR ≈ 128px for 260px diameter display)
+## Design Constants (at mR ≈ 225px for 454px AMOLED display)
 - Dial color: `0x133565` (RGB 19, 53, 101 — matched from reference photo)
 - Dial radius: `mR * 0.92`
 - Minute tick outer: `mR * 0.905`, 5-min inner: `mR * 0.852`, minor inner: `mR * 0.880`
-- Hour markers outer edge: `mR * 0.822` (~4px gap from minute ticks), except 12 o'clock triangle which touches the 59/1 minute marks (`mR * 0.855`)
+- Hour markers outer edge: `mR * 0.800` (rects), `mR * 0.822` (circles), triangle touches minute marks at `mR * 0.855`
 - Circle markers: center at `mR * 0.744`, radius `mR * 0.075`
+- Rect markers (3, 6, 9): `outerR = mR * 0.800`, `innerR = mR * 0.616`, `halfW = mR * 0.050`
 - Steel color: `0x686860`, lume fill: `0xF0EEE8`
 
+## Hour Markers
+- 12 o'clock: downward triangle, `outerR = mR * 0.855`, `innerR = mR * 0.619`, `halfW = mR * 0.100`
+- 3, 6, 9 o'clock: rectangular bars (identical treatment — no date window at 3)
+- All others: applied circles
+
+## Hands
+- Hour: Mercedes design (shaft + circle with 3 spokes + triangular arrowhead). `shaftHW = mR * 0.048`, `circDist = mR * 0.355`, `circR = mR * 0.068`, `triTip = (mR * 0.820) - 45`, `triHW = mR * 0.032`. No tail.
+- Minute: sword shape. `tip = mR * 0.775`, `hw = mR * 0.034`, `lw = hw - 3`. No tail.
+- Second: white, crosses center. Tail circle (`mR * 0.027`) on short side, lollipop (`mR * 0.030`) on long side at `mR * 0.620`. Tip at `mR * 0.855`. Tail at `mR * 0.171`.
+
 ## Date Window
-- Position: `mCx + mR * 0.735` at vertical center
-- Fixed size (fits "28"–"31"): `dW = mR * 0.270`, `dH = mR * 0.250`
-- Corner radius: 4px
+- Position: centered horizontally, `dCy = mCy + mR * 0.500 - 15` (lower dial)
+- Fixed size: `dW = mR * 0.270`, `dH = mR * 0.250`, corner radius 4px
 - Fill inset 1px inside border; inset shadow lines on top and left edges for recessed look
-- Text: `FONT_SMALL`, `TEXT_JUSTIFY_CENTER | TEXT_JUSTIFY_VCENTER`, background `COLOR_TRANSPARENT`
+- Text: `FONT_SMALL`, centered, background `COLOR_TRANSPARENT`
+
+## Day-of-Week Arc Text
+- Positioned in upper dial between 12 o'clock triangle and center
+- Arc: `arcR = mR * 0.780`, `arcCy = mCy + mR * 0.390 - 8` (arc center below text for gentle curve)
+- First character: `FONT_TINY`, centered vertically; remaining: `FONT_XTINY`, biased toward inner rule
+- Letter spacing: 3px; all uppercase
+- Stainless arc rules above and below text; outer rule = 88% length of inner rule, centered
+- Color: `0xE8E8DC` (matches lume on markers/hands)
+
+## Dial Draw Order
+1. `drawDial` — flat blue fill + thin steel ring
+2. `drawMinuteTicks` — 60 ticks in chapter ring
+3. `drawHourMarkers` — triangle, rects, circles
+4. `drawDateWindow` — white inset box, lower center
+5. `drawDayBox` — arc text upper dial
+6. `drawHands` — hour, minute, second (drawn over everything)
+7. `drawCenterDot` — polished steel cap
 
 ## Deferred / Future Work
 - Red GMT hand (second timezone)
-- User's own logo (placeholder space near 12 or center)
+- User's own logo (space available in center/lower dial area)
