@@ -2,7 +2,7 @@
 
 A Garmin Connect IQ watch face for the Fenix 8 (and Fenix 7 / Epix 2), inspired by the Rolex GMT-Master II "Pepsi" blue dial (ref. 126719BLRO) and the Oyster Perpetual Day Date.
 
-# Features
+## Features
 
 - Royal blue dial background
 - Mercedes-style hour hand with shaft, circle, and triangular arrowhead
@@ -18,15 +18,16 @@ A Garmin Connect IQ watch face for the Fenix 8 (and Fenix 7 / Epix 2), inspired 
 - Fenix 7: `fenix7`, `fenix7pro`, `fenix7s`, `fenix7spro`, `fenix7x`, `fenix7xpro`
 - Epix 2: `epix2`, `epix2pro42mm`, `epix2pro47mm`, `epix2pro51mm`
 
-# Installing on Your Watch
+## Installing on Your Watch
 
 No app store needed — install directly via USB.
 
-## What you need
+### What you need
 - A USB data cable (the Garmin charging cable is USB-A on the computer end; you may need a USB-A → USB-C adapter to plug into a modern Mac directly — avoid hubs)
 - The `bin/garminanalogwatchface.prg` file from this repo
 
-## Steps
+### Method 1: USB Mass Storage
+
 1. Download `bin/garminanalogwatchface.prg` from this repo
 2. Connect your watch to your computer via USB
 3. The watch should mount as a USB drive — if it only shows a charging screen, tap through to select **USB Mass Storage** mode
@@ -37,7 +38,21 @@ No app store needed — install directly via USB.
 
 To update, just overwrite the `.prg` file with a newer build — no uninstall needed.
 
-# Building from Source
+### Method 2: MTP via OpenMTP (Mac, if mass storage doesn't work)
+
+Newer Fenix firmware may not expose mass storage mode. If your watch doesn't mount as a drive, try this:
+
+1. On the watch, go to **Settings → System → USB** and set it to **Garmin** (not Media Transfer Protocol)
+2. Install [OpenMTP](https://openmtp.ganeshrvel.com/) on your Mac (free, Mac App Store)
+3. If Garmin Express is installed, kill its background service first — it conflicts with MTP access
+4. Connect the watch via USB; when the Mac asks **"Use MTP?"**, accept
+5. Open OpenMTP — the watch should appear
+6. Navigate to `GARMIN/Apps/` on the watch
+7. Copy `garminanalogwatchface.prg` into that folder
+8. Disconnect — the watch will display **"Verifying ConnectIQ apps"** then confirm installation
+9. Select the watch face: hold **UP** → **Settings** → **Watch Face**
+
+## Building from Source
 
 Requires the [Garmin Connect IQ SDK](https://developer.garmin.com/connect-iq/sdk/) and VS Code with the Monkey C extension.
 
