@@ -1,0 +1,11 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run on fenix847mm",
+            "type": "monkeyc",
+            "request": "launch",
+            "device": "fenix847mm"
+        }
+    ]
+}
