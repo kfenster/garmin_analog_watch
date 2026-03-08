@@ -181,29 +181,59 @@ class GMTMasterView extends WatchUi.WatchFace {
     // -------------------------------------------------------------------------
 
     private function drawDateWindow(dc as Graphics.Dc, day as Number) as Void {
-        var dCx = mCx;
-        var dCy = (mCy + mR * 0.500).toNumber() - 15;
-        var dW  = (mR * 0.270).toNumber();  // fixed width — fits largest 2-digit date
-        var dH  = (mR * 0.250).toNumber();  // taller so sides are clearly rectangular
-        var dX  = dCx - dW / 2;
-        var dY  = dCy - dH / 2;
+        var dCx   = mCx;
+        var dCy   = (mCy + mR * 0.500).toNumber() - 15;
+        var dW    = (mR * 0.270).toNumber();
+        var dH    = (mR * 0.250).toNumber();
+        var dX    = dCx - dW / 2;
+        var dY    = dCy - dH / 2;
 
-        // Outer border
-        dc.setColor(0x707070, Graphics.COLOR_TRANSPARENT);
-        dc.setPenWidth(1);
-        dc.drawRoundedRectangle(dX, dY, dW, dH, 4);
+        // Bulged-side shape: straight top/bottom, convex arc on left and right.
+        // Arc geometry: circle passing through both corners of a side, bulging outward.
+        var halfH  = dH.toFloat() / 2.0;
+        var bulge  = (mR * 0.038).toFloat();   // outward bulge in pixels
+        var offset = (halfH * halfH - bulge * bulge) / (2.0 * bulge);
+        var arcR   = Math.sqrt(offset * offset + halfH * halfH);
+        var aStart = Math.atan2(-halfH, offset);   // angle to top corner from arc center
+        var aEnd   = Math.atan2( halfH, offset);   // angle to bottom corner
 
-        // White fill inset 1px so border stays visible
+        var nArc   = 10;
+        var pts    = new[nArc * 2];
+        var cxR    = (dX + dW).toFloat() - offset;
+        var cxL    = dX.toFloat() + offset;
+        var cy     = dCy.toFloat();
+
+        for (var i = 0; i < nArc; i++) {
+            var t  = i.toFloat() / (nArc - 1).toFloat();
+            var a  = aStart + (aEnd - aStart) * t;
+            // Right arc: top-right → bottom-right
+            pts[i] = [
+                (cxR + arcR * Math.cos(a)).toNumber(),
+                (cy  + arcR * Math.sin(a)).toNumber()
+            ];
+            // Left arc: bottom-left → top-left (reverse angle order)
+            var aL = aEnd - (aEnd - aStart) * t;
+            pts[nArc + i] = [
+                (cxL - arcR * Math.cos(aL)).toNumber(),
+                (cy  + arcR * Math.sin(aL)).toNumber()
+            ];
+        }
+
+        // White fill
         dc.setColor(0xFFFFFF, Graphics.COLOR_TRANSPARENT);
-        dc.fillRoundedRectangle(dX + 1, dY + 1, dW - 2, dH - 2, 3);
+        dc.fillPolygon(pts);
 
-        // Inset shadow: dark edge at top and left (recessed window look)
+        // Inset shadow along top edge
         dc.setColor(0xB0B0B0, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(1);
-        dc.drawLine(dX + 4, dY + 1, dX + dW - 5, dY + 1);
-        dc.drawLine(dX + 1, dY + 4, dX + 1, dY + dH - 5);
+        dc.drawLine(dX, dY + 1, dX + dW, dY + 1);
 
-        // Transparent background so text doesn't paint a white rectangle
+        // Border outline
+        dc.setColor(0x707070, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(1);
+        drawOutline(dc, pts);
+
+        // Date text
         dc.setColor(0x000000, Graphics.COLOR_TRANSPARENT);
         dc.drawText(dCx, dCy, Graphics.FONT_SMALL, day.toString(),
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
