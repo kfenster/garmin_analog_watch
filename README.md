@@ -52,6 +52,11 @@ Newer Fenix firmware may not expose mass storage mode. If your watch doesn't mou
 8. Disconnect — the watch will display **"Verifying ConnectIQ apps"** then confirm installation
 9. Select the watch face: hold **UP** → **Settings** → **Watch Face**
 
+## Future Work
+
+- **Night / lume mode** — when ambient light is low, switch to a black dial with glowing cyan-green hands and markers (matching the real lume glow in the dark), and a light gray date box background. AMOLED's true black would make the lume colors pop dramatically.
+- **GMT / UTC hand** — a red arrow hand showing a second time zone, as on the original GMT-Master II. The hand would complete one revolution every 24 hours and be configurable via Garmin Connect settings.
+
 ## Building from Source
 
 Requires the [Garmin Connect IQ SDK](https://developer.garmin.com/connect-iq/sdk/) and VS Code with the Monkey C extension.
