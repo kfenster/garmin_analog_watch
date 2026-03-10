@@ -12,7 +12,7 @@
             "type": "monkeyc",
             "request": "launch",
             "device": "fenix847mm",
-            "jungleFiles": "monkey-night.jungle"
+            "jungleFiles": "night/monkey.jungle"
         }
     ]
 }
