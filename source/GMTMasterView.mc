@@ -594,6 +594,11 @@ class GMTMasterView extends WatchUi.WatchFace {
         }
     }
 
+    function setSleepMode(sleep as Boolean) as Void {
+        mSleepMode = sleep;
+        WatchUi.requestUpdate();
+    }
+
     function onShow()       as Void {}
     function onHide()       as Void {}
     function onExitSleep()  as Void { mSleepMode = false; WatchUi.requestUpdate(); }
