@@ -19,9 +19,10 @@ import Toybox.Math;
 
 class GMTMasterView extends WatchUi.WatchFace {
 
-    private var mCx as Number = 130;
-    private var mCy as Number = 130;
-    private var mR  as Number = 128;
+    private var mCx       as Number  = 130;
+    private var mCy       as Number  = 130;
+    private var mR        as Number  = 128;
+    private var mSleepMode as Boolean = false;
 
     function initialize() {
         WatchFace.initialize();
@@ -56,14 +57,16 @@ class GMTMasterView extends WatchUi.WatchFace {
 
         var dr = (mR * 0.92).toNumber();
 
-        // Royal blue matched from reference photo: RGB(19, 53, 101)
-        dc.setColor(0x133565, Graphics.COLOR_TRANSPARENT);
+        var dialColor = mSleepMode ? 0x000000 : 0x133565;
+        dc.setColor(dialColor, Graphics.COLOR_TRANSPARENT);
         dc.fillCircle(mCx, mCy, dr);
 
-        dc.setColor(0x909090, Graphics.COLOR_TRANSPARENT);
-        dc.setPenWidth(1);
-        dc.drawCircle(mCx, mCy, dr);
-        dc.drawCircle(mCx, mCy, dr + 1);
+        if (!mSleepMode) {
+            dc.setColor(0x909090, Graphics.COLOR_TRANSPARENT);
+            dc.setPenWidth(1);
+            dc.drawCircle(mCx, mCy, dr);
+            dc.drawCircle(mCx, mCy, dr + 1);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -82,7 +85,8 @@ class GMTMasterView extends WatchUi.WatchFace {
             var isFive = (i % 5 == 0);
             var innerR = isFive ? longIn : shortIn;
 
-            dc.setColor(0xF2F2F2, Graphics.COLOR_TRANSPARENT);
+            var tickColor = mSleepMode ? 0x0A2828 : 0xF2F2F2;
+            dc.setColor(tickColor, Graphics.COLOR_TRANSPARENT);
             dc.setPenWidth(isFive ? 2 : 1);
             dc.drawLine(
                 mCx + (outerR * sa).toNumber(),
@@ -124,9 +128,11 @@ class GMTMasterView extends WatchUi.WatchFace {
             [(mCx + innerR * sa).toNumber(),               (mCy - innerR * ca).toNumber()],
         ];
 
-        dc.setColor(0xE8E8DC, Graphics.COLOR_TRANSPARENT);
+        var lumeColor   = mSleepMode ? 0x00E5CC : 0xE8E8DC;
+        var borderColor = mSleepMode ? 0x003830 : 0x6A6A5A;
+        dc.setColor(lumeColor, Graphics.COLOR_TRANSPARENT);
         dc.fillPolygon(pts);
-        dc.setColor(0x6A6A5A, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(borderColor, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(1);
         drawOutline(dc, pts);
     }
@@ -146,9 +152,11 @@ class GMTMasterView extends WatchUi.WatchFace {
             [(mCx + innerR * sa + halfW * ca).toNumber(), (mCy - innerR * ca + halfW * sa).toNumber()],
         ];
 
-        dc.setColor(0xE8E8DC, Graphics.COLOR_TRANSPARENT);
+        var lumeColor   = mSleepMode ? 0x00E5CC : 0xE8E8DC;
+        var borderColor = mSleepMode ? 0x003830 : 0x6A6A5A;
+        dc.setColor(lumeColor, Graphics.COLOR_TRANSPARENT);
         dc.fillPolygon(pts);
-        dc.setColor(0x6A6A5A, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(borderColor, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(1);
         drawOutline(dc, pts);
     }
@@ -162,18 +170,24 @@ class GMTMasterView extends WatchUi.WatchFace {
         var x = (mCx + dist * Math.sin(angle)).toNumber();
         var y = (mCy - dist * Math.cos(angle)).toNumber();
 
-        // Shadow
-        dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
-        dc.fillCircle(x + 1, y + 1, r);
-        // Metallic outer ring (steel)
-        dc.setColor(0x686860, Graphics.COLOR_TRANSPARENT);
+        var steelColor = mSleepMode ? 0x003830 : 0x686860;
+        var lumeColor  = mSleepMode ? 0x00E5CC : 0xF0EEE8;
+        // Shadow (skip in sleep — nothing to shadow against black)
+        if (!mSleepMode) {
+            dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
+            dc.fillCircle(x + 1, y + 1, r);
+        }
+        // Metallic outer ring
+        dc.setColor(steelColor, Graphics.COLOR_TRANSPARENT);
         dc.fillCircle(x, y, r);
         // Lume fill inside
-        dc.setColor(0xF0EEE8, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(lumeColor, Graphics.COLOR_TRANSPARENT);
         dc.fillCircle(x, y, r - 2);
-        // Small highlight
-        dc.setColor(0xFFFFFF, Graphics.COLOR_TRANSPARENT);
-        dc.fillCircle(x - 1, y - 1, r / 4);
+        // Small highlight (skip in sleep — lume glows uniformly)
+        if (!mSleepMode) {
+            dc.setColor(0xFFFFFF, Graphics.COLOR_TRANSPARENT);
+            dc.fillCircle(x - 1, y - 1, r / 4);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -219,22 +233,26 @@ class GMTMasterView extends WatchUi.WatchFace {
             ];
         }
 
-        // White fill
-        dc.setColor(0xFFFFFF, Graphics.COLOR_TRANSPARENT);
+        // Box fill
+        var boxFill    = mSleepMode ? 0x585858 : 0xFFFFFF;
+        var boxBorder  = mSleepMode ? 0x404040 : 0x707070;
+        var boxShadow  = mSleepMode ? 0x404040 : 0xB0B0B0;
+        var dateText   = mSleepMode ? 0x909090 : 0x000000;
+        dc.setColor(boxFill, Graphics.COLOR_TRANSPARENT);
         dc.fillPolygon(pts);
 
         // Inset shadow along top edge
-        dc.setColor(0xB0B0B0, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(boxShadow, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(1);
         dc.drawLine(dX, dY + 1, dX + dW, dY + 1);
 
         // Border outline
-        dc.setColor(0x707070, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(boxBorder, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(1);
         drawOutline(dc, pts);
 
         // Date text
-        dc.setColor(0x000000, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(dateText, Graphics.COLOR_TRANSPARENT);
         dc.drawText(dCx, dCy, Graphics.FONT_SMALL, day.toString(),
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
     }
@@ -285,7 +303,8 @@ class GMTMasterView extends WatchUi.WatchFace {
         var ruleSpanOut  = ruleSpan * 0.88;                      // outer rule = 88% of inner
         var ruleStartOut = ruleStart + (ruleSpan - ruleSpanOut) / 2.0;  // centered
         var steps       = 24;
-        dc.setColor(0xA8A8A0, Graphics.COLOR_TRANSPARENT);
+        var ruleColor = mSleepMode ? 0x303030 : 0xA8A8A0;
+        dc.setColor(ruleColor, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(1);
         for (var s = 0; s < steps; s++) {
             var a1o = ruleStartOut + ruleSpanOut * s.toFloat()       / steps.toFloat();
@@ -307,7 +326,8 @@ class GMTMasterView extends WatchUi.WatchFace {
         }
 
         // Draw characters: first letter biased toward outer rule, rest toward inner
-        dc.setColor(0xE8E8DC, Graphics.COLOR_TRANSPARENT);
+        var dayColor = mSleepMode ? 0x505050 : 0xE8E8DC;
+        dc.setColor(dayColor, Graphics.COLOR_TRANSPARENT);
         var curAngle = startAngle;
         for (var i = 0; i < n; i++) {
             var charW    = charWidths[i].toFloat();
@@ -366,26 +386,32 @@ class GMTMasterView extends WatchUi.WatchFace {
         var shaftRot     = rotateTranslate(shaft,     angle);
         var shaftLumeRot = rotateTranslate(shaftLume, angle);
 
-        dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon(shiftPts(shaftRot, 1, 1));
-        dc.setColor(0x686860, Graphics.COLOR_TRANSPARENT);
+        var hSteelColor = mSleepMode ? 0x003830 : 0x686860;
+        var hLumeColor  = mSleepMode ? 0x00E5CC : 0xF0EEE8;
+        if (!mSleepMode) {
+            dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
+            dc.fillPolygon(shiftPts(shaftRot, 1, 1));
+        }
+        dc.setColor(hSteelColor, Graphics.COLOR_TRANSPARENT);
         dc.fillPolygon(shaftRot);
-        dc.setColor(0xF0EEE8, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(hLumeColor, Graphics.COLOR_TRANSPARENT);
         dc.fillPolygon(shaftLumeRot);
 
         // --- Mercedes circle ---
         var circX = (mCx + circDist * sa).toNumber();
         var circY = (mCy - circDist * ca).toNumber();
 
-        dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
-        dc.fillCircle(circX + 1, circY + 1, circR);
-        dc.setColor(0x686860, Graphics.COLOR_TRANSPARENT);    // steel ring
+        if (!mSleepMode) {
+            dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
+            dc.fillCircle(circX + 1, circY + 1, circR);
+        }
+        dc.setColor(hSteelColor, Graphics.COLOR_TRANSPARENT);    // steel ring
         dc.fillCircle(circX, circY, circR);
-        dc.setColor(0xF0EEE8, Graphics.COLOR_TRANSPARENT);   // lume fill
+        dc.setColor(hLumeColor, Graphics.COLOR_TRANSPARENT);   // lume fill
         dc.fillCircle(circX, circY, circR - 2);
 
         // Three spokes dividing the circle (Mercedes logo pattern)
-        dc.setColor(0x686860, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(hSteelColor, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(2);
         for (var j = 0; j < 3; j++) {
             var spokeAngle = angle + j * (2.0 * Math.PI / 3.0);
@@ -409,11 +435,13 @@ class GMTMasterView extends WatchUi.WatchFace {
         var triRot     = rotateTranslate(tri,     angle);
         var triLumeRot = rotateTranslate(triLume, angle);
 
-        dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon(shiftPts(triRot, 1, 1));
-        dc.setColor(0x686860, Graphics.COLOR_TRANSPARENT);
+        if (!mSleepMode) {
+            dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
+            dc.fillPolygon(shiftPts(triRot, 1, 1));
+        }
+        dc.setColor(hSteelColor, Graphics.COLOR_TRANSPARENT);
         dc.fillPolygon(triRot);
-        dc.setColor(0xF0EEE8, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(hLumeColor, Graphics.COLOR_TRANSPARENT);
         dc.fillPolygon(triLumeRot);
     }
 
@@ -447,11 +475,15 @@ class GMTMasterView extends WatchUi.WatchFace {
         var steelRot = rotateTranslate(steel, angle);
         var lumeRot  = rotateTranslate(lume,  angle);
 
-        dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon(shiftPts(steelRot, 1, 1));
-        dc.setColor(0x686860, Graphics.COLOR_TRANSPARENT);   // darker steel, clearly visible
+        var mSteelColor = mSleepMode ? 0x003830 : 0x686860;
+        var mLumeColor  = mSleepMode ? 0x00E5CC : 0xF0EEE8;
+        if (!mSleepMode) {
+            dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
+            dc.fillPolygon(shiftPts(steelRot, 1, 1));
+        }
+        dc.setColor(mSteelColor, Graphics.COLOR_TRANSPARENT);
         dc.fillPolygon(steelRot);
-        dc.setColor(0xF0EEE8, Graphics.COLOR_TRANSPARENT);   // warm lume
+        dc.setColor(mLumeColor, Graphics.COLOR_TRANSPARENT);
         dc.fillPolygon(lumeRot);
     }
 
@@ -475,31 +507,35 @@ class GMTMasterView extends WatchUi.WatchFace {
 
         var tailCircR = (mR * 0.027).toNumber();  // 80% area of lollipop circle
 
-        // Shadow
-        dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
-        dc.setPenWidth(2);
-        dc.drawLine(tailX + 1, tailY + 1, tipX + 1, tipY + 1);
-        dc.fillCircle(lollX + 1, lollY + 1, lollR);
-        dc.fillCircle(tailX + 1, tailY + 1, tailCircR);
+        var secColor = mSleepMode ? 0x00E5CC : 0xFFFFFF;
 
-        // White tail line
-        dc.setColor(0xFFFFFF, Graphics.COLOR_TRANSPARENT);
+        // Shadow (skip in sleep — nothing to shadow against black)
+        if (!mSleepMode) {
+            dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
+            dc.setPenWidth(2);
+            dc.drawLine(tailX + 1, tailY + 1, tipX + 1, tipY + 1);
+            dc.fillCircle(lollX + 1, lollY + 1, lollR);
+            dc.fillCircle(tailX + 1, tailY + 1, tailCircR);
+        }
+
+        // Tail line
+        dc.setColor(secColor, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(2);
         dc.drawLine(tailX, tailY, mCx, mCy);
 
         // Circle at tail end
         dc.fillCircle(tailX, tailY, tailCircR);
 
-        // White line: center to lollipop
+        // Line: center to lollipop
         dc.drawLine(mCx, mCy, lollX, lollY);
 
         // Lollipop circle
         dc.fillCircle(lollX, lollY, lollR);
 
-        // White line: lollipop to tip (thin needle continues past the circle)
+        // Line: lollipop to tip
         dc.drawLine(lollX, lollY, tipX, tipY);
 
-        // Small pivot circle at center (drawn last so it sits on top of lines)
+        // Small pivot circle at center
         dc.fillCircle(mCx, mCy, pivotR);
     }
 
@@ -560,7 +596,7 @@ class GMTMasterView extends WatchUi.WatchFace {
 
     function onShow()       as Void {}
     function onHide()       as Void {}
-    function onExitSleep()  as Void {}
-    function onEnterSleep() as Void {}
+    function onExitSleep()  as Void { mSleepMode = false; WatchUi.requestUpdate(); }
+    function onEnterSleep() as Void { mSleepMode = true;  WatchUi.requestUpdate(); }
 
 }

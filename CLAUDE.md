@@ -88,6 +88,12 @@ Marker positions: `x = cx + r*sin(angle)`, `y = cy - r*cos(angle)`
 6. `drawHands` — hour, minute, second (drawn over everything)
 7. `drawCenterDot` — polished steel cap
 
+## Sleep / Night Mode
+- `mSleepMode` boolean toggled by `onEnterSleep()` / `onExitSleep()` (calls `WatchUi.requestUpdate()`)
+- Sleep palette: black dial (`0x000000`), cyan-green lume (`0x00E5CC`), dark steel (`0x003830`), dim ticks (`0x0A2828`), gray date box (`0x585858` fill, `0x909090` text), muted day text (`0x505050`), dark rules (`0x303030`)
+- Drop shadows skipped in sleep mode (nothing to shadow against black)
+- Normal palette: blue dial (`0x133565`), warm lume (`0xF0EEE8`), steel (`0x686860`), white ticks, white date box, off-white day text
+
 ## Deferred / Future Work
 - Red GMT hand (second timezone)
 - User's own logo (space available in center/lower dial area)
