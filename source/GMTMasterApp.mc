@@ -16,11 +16,11 @@ class GMTMasterApp extends Application.AppBase {
     }
 
     function onSleep() as Void {
-        if (mView != null) { mView.setSleepMode(true); }
+        if (mView != null) { (mView as GMTMasterView).setSleepMode(true); }
     }
 
     function onWake() as Void {
-        if (mView != null) { mView.setSleepMode(false); }
+        if (mView != null) { (mView as GMTMasterView).setSleepMode(false); }
     }
 
 }
