@@ -599,4 +599,10 @@ class GMTMasterView extends WatchUi.WatchFace {
     function onExitSleep()  as Void { mSleepMode = false; WatchUi.requestUpdate(); }
     function onEnterSleep() as Void { mSleepMode = true;  WatchUi.requestUpdate(); }
 
+    // In sleep mode Garmin dispatches partial updates instead of onUpdate.
+    // Delegate to onUpdate so the sleep palette is rendered.
+    function onPartialUpdate(dc as Graphics.Dc) as Void {
+        onUpdate(dc);
+    }
+
 }
