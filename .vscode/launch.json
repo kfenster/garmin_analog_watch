@@ -6,6 +6,13 @@
             "type": "monkeyc",
             "request": "launch",
             "device": "fenix847mm"
+        },
+        {
+            "name": "Run Night on fenix847mm",
+            "type": "monkeyc",
+            "request": "launch",
+            "device": "fenix847mm",
+            "jungleFiles": "monkey-night.jungle"
         }
     ]
 }

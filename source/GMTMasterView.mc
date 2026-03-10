@@ -22,7 +22,8 @@ class GMTMasterView extends WatchUi.WatchFace {
     private var mCx       as Number  = 130;
     private var mCy       as Number  = 130;
     private var mR        as Number  = 128;
-    private var mSleepMode as Boolean = false;
+    (:dayOnly)   private var mSleepMode as Boolean = false;
+    (:nightOnly) private var mSleepMode as Boolean = true;
 
     function initialize() {
         WatchFace.initialize();

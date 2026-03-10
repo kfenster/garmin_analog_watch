@@ -1,0 +1,6 @@
+project.manifest = manifest-night.xml
+
+base.sourcePath = source
+base.resourcePath = resources-night;resources
+base.excludeAnnotations = dayOnly
+base.lang = Toybox
