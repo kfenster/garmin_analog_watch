@@ -11,7 +11,7 @@
                 "-Dapple.awt.UIElement=true",
                 "-jar",
                 "/Users/kurt/Library/Application Support/Garmin/ConnectIQ/Sdks/connectiq-sdk-mac-8.4.1-2026-02-03-e9f77eeaa/bin/monkeybrains.jar",
-                "-o", "night/bin/garminanalogwatchface.prg",
+                "-o", "night/bin/garminanalogwatchfacenight.prg",
                 "-f", "${workspaceFolder}/night/monkey.jungle",
                 "-y", "/Users/kurt/developer_key",
                 "-d", "fenix847mm",
