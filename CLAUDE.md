@@ -1,7 +1,7 @@
-# GMT Master Watch Face — Developer Notes
+# Analog Blue Watch Face — Developer Notes
 
 ## Project
-Garmin Connect IQ watch face for Fenix 8 (and Fenix 7 / Epix 2), inspired by the Rolex GMT-Master II "Pepsi" blue dial (ref. 126719BLRO).
+Garmin Connect IQ watch face for Fenix 8 (and Fenix 7 / Epix 2), inspired by the Rolex GMT-Master and Oyster Day-Date Perpetual designs.
 
 ## Build Setup
 - SDK: Connect IQ 8.4.1 at `/Users/kurt/Library/Application Support/Garmin/ConnectIQ/Sdks/connectiq-sdk-mac-8.4.1-2026-02-03-e9f77eeaa`
@@ -94,7 +94,7 @@ Marker positions: `x = cx + r*sin(angle)`, `y = cy - r*cos(angle)`
 - Sleep palette: black dial (`0x000000`), cyan-green lume (`0x00E5CC`), dark steel (`0x003830`), dim ticks (`0x0A2828`), gray date box (`0x585858` fill, `0x909090` text), muted day text (`0x505050`), dark rules (`0x303030`)
 - App ID: `c9f2e817-3b5a-4d6c-a018-72e4f9b3c501` (distinct from day face)
 - Build: **Terminal → Run Task → "Build Night PRG"** → `night/bin/garminanalogwatchfacenight.prg`
-- Sideload both PRGs to `GARMIN/APPS/`; select GMT Master Night as the sleep face in watch settings
+- Sideload both PRGs to `GARMIN/APPS/`; select Analog Blue Night as the sleep face in watch settings
 - Day face still has `mSleepMode` + `onEnterSleep`/`onExitSleep` wiring (for "Always On" display mode in simulator), but the Fenix 8 sleep face setting is the intended mechanism on device
 - VS Code extension ignores `jungles` in launch.json — always builds root `monkey.jungle`; use the task for the night build
 

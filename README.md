@@ -1,6 +1,6 @@
-# A Rolex GMT Master-inspired Watch Face
+# Analog Blue Watch Face
 
-A Garmin Connect IQ watch face for the Fenix 8 (and Fenix 7 / Epix 2), inspired by the Rolex GMT-Master II "Pepsi" blue dial (ref. 126719BLRO) and the Oyster Perpetual Day Date.
+A Garmin Connect IQ watch face for the Fenix 8 (and Fenix 7 / Epix 2), inspired by the Rolex GMT-Master and Oyster Day-Date Perpetual designs.
 
 ## Features
 
@@ -11,7 +11,7 @@ A Garmin Connect IQ watch face for the Fenix 8 (and Fenix 7 / Epix 2), inspired 
 - Distinctive markers at the 5-minute marks
 - Day-of-week in arced text in the upper dial (small caps, off-white, with stainless rules)
 - Date window in the lower dial with distinctive bulged sides
-- **Night / lume mode** — a companion watch face (`GMT Master Night`) with a true black AMOLED dial and glowing cyan-green hands and markers, selectable as the watch's sleep face
+- **Night / lume mode** — a companion watch face (`Analog Blue Night`) with a true black AMOLED dial and glowing cyan-green hands and markers, selectable as the watch's sleep face
 
 ## Compatible Devices
 
@@ -36,8 +36,8 @@ No app store needed — install directly via USB. There are two watch faces to i
 4. Open the mounted drive in Finder (Mac) or Explorer (Windows)
 5. Copy **both** PRG files into the `GARMIN/APPS/` folder
 6. Eject the drive and disconnect — the watch will verify and install both faces
-7. Select the day face: hold **UP** → **Settings** → **Watch Face** → select **GMT Master**
-8. Select the sleep face: hold **UP** → **Settings** → **Watch Face** → **Sleep Face** → select **GMT Master Night**
+7. Select the day face: hold **UP** → **Settings** → **Watch Face** → select **Analog Blue**
+8. Select the sleep face: hold **UP** → **Settings** → **Watch Face** → **Sleep Face** → select **Analog Blue Night**
 
 To update, overwrite the relevant `.prg` file(s) — no uninstall needed.
 
@@ -53,8 +53,8 @@ Newer Fenix firmware may not expose mass storage mode. If your watch doesn't mou
 6. Navigate to `GARMIN/Apps/` on the watch
 7. Copy **both** PRG files into that folder
 8. Disconnect — the watch will display **"Verifying ConnectIQ apps"** then confirm installation
-9. Select the day face: hold **UP** → **Settings** → **Watch Face** → **GMT Master**
-10. Select the sleep face: hold **UP** → **Settings** → **Watch Face** → **Sleep Face** → **GMT Master Night**
+9. Select the day face: hold **UP** → **Settings** → **Watch Face** → **Analog Blue**
+10. Select the sleep face: hold **UP** → **Settings** → **Watch Face** → **Sleep Face** → **Analog Blue Night**
 
 ## Building from Source
 
