@@ -1,5 +1,5 @@
 project.manifest = manifest.xml
 
 base.sourcePath = source
-base.resourcePath = resources;../resources
+base.resourcePath = resources
 base.lang = Toybox

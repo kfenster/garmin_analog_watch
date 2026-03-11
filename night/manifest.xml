@@ -1,7 +1,7 @@
 <iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
     <iq:application
         entry="GMTMasterApp"
-        id="a3b4c5d6-e5f6-4a7b-8c9d-e0f1a2b3c4d6"
+        id="c9f2e817-3b5a-4d6c-a018-72e4f9b3c501"
         launcherIcon="@Drawables.LauncherIcon"
         minApiLevel="4.0.0"
         name="@Strings.AppName"
