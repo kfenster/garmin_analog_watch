@@ -11,6 +11,7 @@ A Garmin Connect IQ watch face for the Fenix 8 (and Fenix 7 / Epix 2), inspired 
 - Distinctive markers at the 5-minute marks
 - Day-of-week in arced text in the upper dial (small caps, off-white, with stainless rules)
 - Date window in the lower dial with distinctive bulged sides
+- **Night / lume mode** — a companion watch face (`GMT Master Night`) with a true black AMOLED dial and glowing cyan-green hands and markers, selectable as the watch's sleep face
 
 ## Compatible Devices
 
@@ -20,23 +21,25 @@ A Garmin Connect IQ watch face for the Fenix 8 (and Fenix 7 / Epix 2), inspired 
 
 ## Installing on Your Watch
 
-No app store needed — install directly via USB.
+No app store needed — install directly via USB. There are two watch faces to install: the day face and the night/sleep face.
 
 ### What you need
 - A USB data cable (the Garmin charging cable is USB-A on the computer end; you may need a USB-A → USB-C adapter to plug into a modern Mac directly — avoid hubs)
-- The `bin/garminanalogwatchface.prg` file from this repo
+- `bin/garminanalogwatchface.prg` — the day face
+- `night/bin/garminanalogwatchfacenight.prg` — the night/sleep face
 
 ### Method 1: USB Mass Storage
 
-1. Download `bin/garminanalogwatchface.prg` from this repo
+1. Build both PRG files (see **Building from Source** below)
 2. Connect your watch to your computer via USB
 3. The watch should mount as a USB drive — if it only shows a charging screen, tap through to select **USB Mass Storage** mode
 4. Open the mounted drive in Finder (Mac) or Explorer (Windows)
-5. Copy `garminanalogwatchface.prg` into the `GARMIN/APPS/` folder
-6. Eject the drive and disconnect
-7. On the watch: hold **UP** (top-left button) → **Settings** → **Watch Face** → select the new face
+5. Copy **both** PRG files into the `GARMIN/APPS/` folder
+6. Eject the drive and disconnect — the watch will verify and install both faces
+7. Select the day face: hold **UP** → **Settings** → **Watch Face** → select **GMT Master**
+8. Select the sleep face: hold **UP** → **Settings** → **Watch Face** → **Sleep Face** → select **GMT Master Night**
 
-To update, just overwrite the `.prg` file with a newer build — no uninstall needed.
+To update, overwrite the relevant `.prg` file(s) — no uninstall needed.
 
 ### Method 2: MTP via OpenMTP (Mac, if mass storage doesn't work)
 
@@ -48,19 +51,25 @@ Newer Fenix firmware may not expose mass storage mode. If your watch doesn't mou
 4. Connect the watch via USB; when the Mac asks **"Use MTP?"**, accept
 5. Open OpenMTP — the watch should appear
 6. Navigate to `GARMIN/Apps/` on the watch
-7. Copy `garminanalogwatchface.prg` into that folder
+7. Copy **both** PRG files into that folder
 8. Disconnect — the watch will display **"Verifying ConnectIQ apps"** then confirm installation
-9. Select the watch face: hold **UP** → **Settings** → **Watch Face**
-
-## Future Work
-
-- **Night / lume mode** — when ambient light is low, switch to a black dial with glowing cyan-green hands and markers (matching the real lume glow in the dark), and a light gray date box background. AMOLED's true black would make the lume colors pop dramatically.
-- **GMT / UTC hand** — a red arrow hand showing a second time zone, as on the original GMT-Master II. The hand would complete one revolution every 24 hours and be configurable via Garmin Connect settings.
+9. Select the day face: hold **UP** → **Settings** → **Watch Face** → **GMT Master**
+10. Select the sleep face: hold **UP** → **Settings** → **Watch Face** → **Sleep Face** → **GMT Master Night**
 
 ## Building from Source
 
 Requires the [Garmin Connect IQ SDK](https://developer.garmin.com/connect-iq/sdk/) and VS Code with the Monkey C extension.
 
+### Day face
 - Open the project folder in VS Code
 - Press **F5** to build and run in the simulator
-- Use **Monkey C: Build Current Project** from the command palette to build a `.prg` for sideloading
+- Use **Monkey C: Build Current Project** from the command palette to produce `bin/garminanalogwatchface.prg`
+
+### Night face
+- Run **Terminal → Run Task → "Build Night PRG"**
+- Output: `night/bin/garminanalogwatchfacenight.prg`
+- The night face is a standalone project in `night/` — always renders the black/cyan-green lume palette with no mode switching
+
+## Future Work
+
+- **GMT / UTC hand** — a red arrow hand showing a second time zone, as on the original GMT-Master II. The hand would complete one revolution every 24 hours and be configurable via Garmin Connect settings.

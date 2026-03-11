@@ -88,11 +88,22 @@ Marker positions: `x = cx + r*sin(angle)`, `y = cy - r*cos(angle)`
 6. `drawHands` — hour, minute, second (drawn over everything)
 7. `drawCenterDot` — polished steel cap
 
-## Sleep / Night Mode
-- `mSleepMode` boolean toggled by `onEnterSleep()` / `onExitSleep()` (calls `WatchUi.requestUpdate()`)
+## Night / Sleep Face (`night/`)
+- Separate standalone project — not a build variant of the day face
+- Always renders sleep palette: no `mSleepMode` variable, no callbacks, no switching logic
 - Sleep palette: black dial (`0x000000`), cyan-green lume (`0x00E5CC`), dark steel (`0x003830`), dim ticks (`0x0A2828`), gray date box (`0x585858` fill, `0x909090` text), muted day text (`0x505050`), dark rules (`0x303030`)
-- Drop shadows skipped in sleep mode (nothing to shadow against black)
-- Normal palette: blue dial (`0x133565`), warm lume (`0xF0EEE8`), steel (`0x686860`), white ticks, white date box, off-white day text
+- App ID: `c9f2e817-3b5a-4d6c-a018-72e4f9b3c501` (distinct from day face)
+- Build: **Terminal → Run Task → "Build Night PRG"** → `night/bin/garminanalogwatchfacenight.prg`
+- Sideload both PRGs to `GARMIN/APPS/`; select GMT Master Night as the sleep face in watch settings
+- Day face still has `mSleepMode` + `onEnterSleep`/`onExitSleep` wiring (for "Always On" display mode in simulator), but the Fenix 8 sleep face setting is the intended mechanism on device
+- VS Code extension ignores `jungles` in launch.json — always builds root `monkey.jungle`; use the task for the night build
+
+## Day Face Sleep Mode Wiring (source/GMTMasterView.mc)
+- `mSleepMode` boolean + `setSleepMode()` public method
+- `AppBase.onSleep()` / `onWake()` in GMTMasterApp delegate to `setSleepMode()`
+- `onEnterSleep()` / `onExitSleep()` on WatchFace also set the flag (belt and suspenders)
+- `onPartialUpdate()` delegates to `onUpdate()` so always-on display mode redraws correctly
+- In simulator: "Display Mode → Always On" triggers sleep palette; "High Power" restores day palette
 
 ## Deferred / Future Work
 - Red GMT hand (second timezone)
