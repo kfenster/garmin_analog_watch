@@ -63,6 +63,7 @@ Marker positions: `x = cx + r*sin(angle)`, `y = cy - r*cos(angle)`
 ## Hands
 - Hour: Baton design (shaft + flared arrowhead tip, no Mercedes circle). `shaftHW = mR * 0.055`, `tipDist = (mR * 0.820) - 45`, `triH = mR * 0.153` (arrowhead height), `triHW = mR * 0.083` (arrowhead half-width). One-piece 7-point polygon. No tail.
 - Minute: arrowhead shape. `tip = mR * 0.775`, `hw = mR * 0.034`, `lw = hw - 2`, `arrowH = mR * 0.155` (arrowhead height), `arrowHW = hw + 5`. Parallel sides flaring to arrowhead then point. No tail.
+- GMT (UTC): red arrow hand (`0xDD1111`), always red in all modes/palettes. Half minute-hand thickness (`hw = mR * 0.017`). Same arrowhead style as minute hand (`arrowH = mR * 0.120`, `arrowHW = hw + 5`), tip at `mR * 0.775`. Drawn above hour, below minute. UTC time computed from `Time.now().value() % 86400`.
 - Second: white, crosses center. Tail circle (`mR * 0.027`) on short side, lollipop (`mR * 0.030`) on long side at `mR * 0.620`. Tip at `mR * 0.855`. Tail at `mR * 0.171`.
 
 ## Date Window
@@ -98,6 +99,7 @@ Marker positions: `x = cx + r*sin(angle)`, `y = cy - r*cos(angle)`
 - Sideload both PRGs to `GARMIN/APPS/`; select Analog Blue Night as the sleep face in watch settings
 - Day face still has `mSleepMode` + `onEnterSleep`/`onExitSleep` wiring (for "Always On" display mode in simulator), but the Fenix 8 sleep face setting is the intended mechanism on device
 - VS Code extension ignores `jungles` in launch.json — always builds root `monkey.jungle`; use the task for the night build
+- **Any change to `night/source/` requires a manual "Build Night PRG" task run** — F5 only rebuilds the day face PRG
 
 ## Day Face Sleep Mode Wiring (source/GMTMasterView.mc)
 - `mSleepMode` boolean + `setSleepMode()` public method
@@ -107,5 +109,4 @@ Marker positions: `x = cx + r*sin(angle)`, `y = cy - r*cos(angle)`
 - In simulator: "Display Mode → Always On" triggers sleep palette; "High Power" restores day palette
 
 ## Deferred / Future Work
-- Red GMT hand (second timezone)
 - User's own logo (space available in center/lower dial area)

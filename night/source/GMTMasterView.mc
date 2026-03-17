@@ -298,9 +298,14 @@ class GMTMasterView extends WatchUi.WatchFace {
         var m = clockTime.min;
         var s = clockTime.sec;
 
-        drawHourHand(dc,   (h + m / 60.0) * (2.0 * Math.PI / 12.0));
-        drawMinuteHand(dc, (m + s / 60.0) * (2.0 * Math.PI / 60.0));
-        drawSecondHand(dc,  s             * (2.0 * Math.PI / 60.0));
+        var utcSecs = Time.now().value() % 86400;
+        var utcH    = (utcSecs / 3600) % 12;
+        var utcM    = (utcSecs % 3600) / 60;
+
+        drawHourHand(dc,   (h + m / 60.0)       * (2.0 * Math.PI / 12.0));
+        drawGMTHand(dc,    (utcH + utcM / 60.0) * (2.0 * Math.PI / 12.0));
+        drawMinuteHand(dc, (m + s / 60.0)       * (2.0 * Math.PI / 60.0));
+        drawSecondHand(dc,  s                   * (2.0 * Math.PI / 60.0));
     }
 
     private function drawHourHand(dc as Graphics.Dc, angle as Float) as Void {
@@ -337,6 +342,28 @@ class GMTMasterView extends WatchUi.WatchFace {
         dc.fillPolygon(steelRot);
         dc.setColor(0x00E5CC, Graphics.COLOR_TRANSPARENT);
         dc.fillPolygon(lumeRot);
+    }
+
+    private function drawGMTHand(dc as Graphics.Dc, angle as Float) as Void {
+        var tip      = (mR * 0.775).toNumber();
+        var hw       = (mR * 0.017).toNumber();
+        var arrowH   = (mR * 0.120).toNumber();
+        var arrowHW  = hw + 5;
+        var arrowBase = tip - arrowH;
+
+        var pts = [
+            [-hw,       0],
+            [ hw,       0],
+            [ hw,      -arrowBase],
+            [ arrowHW, -arrowBase],
+            [ 0,       -tip],
+            [-arrowHW, -arrowBase],
+            [-hw,      -arrowBase],
+        ];
+        var ptsRot = rotateTranslate(pts, angle);
+
+        dc.setColor(0xDD1111, Graphics.COLOR_TRANSPARENT);
+        dc.fillPolygon(ptsRot);
     }
 
     private function drawMinuteHand(dc as Graphics.Dc, angle as Float) as Void {
