@@ -196,9 +196,9 @@ class GMTMasterView extends WatchUi.WatchFace {
 
     private function drawDateWindow(dc as Graphics.Dc, day as Number) as Void {
         var dCx   = mCx;
-        var dCy   = (mCy + mR * 0.500).toNumber() - 15;
-        var dW    = (mR * 0.270).toNumber();
-        var dH    = (mR * 0.250).toNumber();
+        var dCy   = (mCy + mR * 0.500).toNumber() - 30;
+        var dW    = (mR * 0.215).toNumber();
+        var dH    = (mR * 0.200).toNumber();
         var dX    = dCx - dW / 2;
         var dY    = dCy - dH / 2;
 
@@ -237,7 +237,7 @@ class GMTMasterView extends WatchUi.WatchFace {
         var boxFill    = mSleepMode ? 0x585858 : 0xFFFFFF;
         var boxBorder  = mSleepMode ? 0x404040 : 0x707070;
         var boxShadow  = mSleepMode ? 0x404040 : 0xB0B0B0;
-        var dateText   = mSleepMode ? 0x909090 : 0x000000;
+        var dateText   = mSleepMode ? 0x00E5CC : 0x000000;
         dc.setColor(boxFill, Graphics.COLOR_TRANSPARENT);
         dc.fillPolygon(pts);
 
@@ -253,7 +253,7 @@ class GMTMasterView extends WatchUi.WatchFace {
 
         // Date text
         dc.setColor(dateText, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(dCx, dCy, Graphics.FONT_SMALL, day.toString(),
+        dc.drawText(dCx, dCy, Graphics.FONT_TINY, day.toString(),
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
@@ -359,117 +359,75 @@ class GMTMasterView extends WatchUi.WatchFace {
     }
 
     private function drawHourHand(dc as Graphics.Dc, angle as Float) as Void {
-        // Rolex Mercedes hand: rectangular shaft + large circle (3 spokes) + triangular tip
-        var ca = Math.cos(angle);
-        var sa = Math.sin(angle);
+        // Baton hand: rectangular shaft with flared triangular arrowhead at tip
+        var shaftHW  = (mR * 0.055).toNumber();        // shaft half-width (+15%)
+        var tipDist  = (mR * 0.820).toNumber() - 45;   // tip distance from center
+        var triH     = (mR * 0.153).toNumber();         // height of triangular arrowhead (-10%)
+        var triHW    = (mR * 0.083).toNumber();         // arrowhead half-width (+15%)
+        var shaftTop = tipDist - triH;                  // distance from center to triangle base
 
-        var shaftHW   = (mR * 0.048).toNumber();   // shaft half-width (15% thicker)
-        var circDist  = (mR * 0.355).toNumber();   // circle center from watch center
-        var circR     = (mR * 0.068).toNumber();   // Mercedes circle radius
-        var triTip    = (mR * 0.820).toNumber() - 45;   // arrowhead tip — 15% longer again
-        var triHW     = (mR * 0.032).toNumber();   // arrowhead half-width at base
-        var shaftTopY = circDist - circR;           // shaft reaches bottom edge of circle
+        // One-piece shape: shaft sides + arrowhead flare + point
+        var steel = [
+            [-shaftHW,   0],
+            [ shaftHW,   0],
+            [ shaftHW,  -shaftTop],
+            [ triHW,    -shaftTop],
+            [ 0,        -tipDist],
+            [-triHW,    -shaftTop],
+            [-shaftHW,  -shaftTop],
+        ];
+        var lume = [
+            [-(shaftHW - 2),  0],
+            [ (shaftHW - 2),  0],
+            [ (shaftHW - 2), -shaftTop],
+            [ (triHW - 1),   -shaftTop],
+            [ 0,             -(tipDist - 2)],
+            [-(triHW - 1),   -shaftTop],
+            [-(shaftHW - 2), -shaftTop],
+        ];
 
-        // --- Shaft (starts at center, no tail) ---
-        var shaft = [
-            [-shaftHW,  0],
-            [ shaftHW,  0],
-            [ shaftHW, -shaftTopY],
-            [-shaftHW, -shaftTopY],
-        ];
-        var shaftLume = [
-            [-(shaftHW - 3),  0],
-            [ (shaftHW - 3),  0],
-            [ (shaftHW - 3), -shaftTopY],
-            [-(shaftHW - 3), -shaftTopY],
-        ];
-        var shaftRot     = rotateTranslate(shaft,     angle);
-        var shaftLumeRot = rotateTranslate(shaftLume, angle);
+        var steelRot = rotateTranslate(steel, angle);
+        var lumeRot  = rotateTranslate(lume,  angle);
 
         var hSteelColor = mSleepMode ? 0x003830 : 0x686860;
         var hLumeColor  = mSleepMode ? 0x00E5CC : 0xF0EEE8;
         if (!mSleepMode) {
             dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
-            dc.fillPolygon(shiftPts(shaftRot, 1, 1));
+            dc.fillPolygon(shiftPts(steelRot, 1, 1));
         }
         dc.setColor(hSteelColor, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon(shaftRot);
+        dc.fillPolygon(steelRot);
         dc.setColor(hLumeColor, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon(shaftLumeRot);
-
-        // --- Mercedes circle ---
-        var circX = (mCx + circDist * sa).toNumber();
-        var circY = (mCy - circDist * ca).toNumber();
-
-        if (!mSleepMode) {
-            dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
-            dc.fillCircle(circX + 1, circY + 1, circR);
-        }
-        dc.setColor(hSteelColor, Graphics.COLOR_TRANSPARENT);    // steel ring
-        dc.fillCircle(circX, circY, circR);
-        dc.setColor(hLumeColor, Graphics.COLOR_TRANSPARENT);   // lume fill
-        dc.fillCircle(circX, circY, circR - 2);
-
-        // Three spokes dividing the circle (Mercedes logo pattern)
-        dc.setColor(hSteelColor, Graphics.COLOR_TRANSPARENT);
-        dc.setPenWidth(2);
-        for (var j = 0; j < 3; j++) {
-            var spokeAngle = angle + j * (2.0 * Math.PI / 3.0);
-            var lx = (circX + (circR - 1) * Math.sin(spokeAngle)).toNumber();
-            var ly = (circY - (circR - 1) * Math.cos(spokeAngle)).toNumber();
-            dc.drawLine(circX, circY, lx, ly);
-        }
-
-        // --- Triangular arrowhead above circle ---
-        var triBaseY = -(circDist + circR + 1);
-        var tri = [
-            [-triHW, triBaseY],
-            [ triHW, triBaseY],
-            [ 0,    -triTip],
-        ];
-        var triLume = [
-            [-(triHW - 1), triBaseY + 1],
-            [ (triHW - 1), triBaseY + 1],
-            [ 0,           -(triTip - 2)],
-        ];
-        var triRot     = rotateTranslate(tri,     angle);
-        var triLumeRot = rotateTranslate(triLume, angle);
-
-        if (!mSleepMode) {
-            dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
-            dc.fillPolygon(shiftPts(triRot, 1, 1));
-        }
-        dc.setColor(hSteelColor, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon(triRot);
-        dc.setColor(hLumeColor, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon(triLumeRot);
+        dc.fillPolygon(lumeRot);
     }
 
     private function drawMinuteHand(dc as Graphics.Dc, angle as Float) as Void {
-        // Rolex Maxi minute hand: wide body, tapers to a pointed sword tip
-        var tip  = (mR * 0.775).toNumber();   // 5% longer
-        var hw   = (mR * 0.034).toNumber();  // 10% narrower
-        var lw   = hw - 3;
+        // Minute hand with proportional arrowhead at tip
+        var tip       = (mR * 0.775).toNumber();
+        var hw        = (mR * 0.034).toNumber();
+        var lw        = hw - 2;
+        var arrowH    = (mR * 0.155).toNumber();   // arrowhead section height
+        var arrowHW   = hw + 5;                    // arrowhead half-width (proportional flare)
+        var arrowBase = tip - arrowH;              // where arrowhead starts from center
 
-        // Outer steel — starts at center, narrows into sword tip
+        // Shaft with parallel sides, flaring to arrowhead then to point
         var steel = [
-            [-hw,  0],
-            [ hw,  0],
-            [ hw, -(tip - 12)],
-            [ 3,  -tip],
-            [ 0,  -(tip + 2)],
-            [-3,  -tip],
-            [-hw, -(tip - 12)],
+            [-hw,       0],
+            [ hw,       0],
+            [ hw,      -arrowBase],
+            [ arrowHW, -arrowBase],
+            [ 0,       -tip],
+            [-arrowHW, -arrowBase],
+            [-hw,      -arrowBase],
         ];
-        // Inner lume shape
         var lume = [
-            [-lw,  0],
-            [ lw,  0],
-            [ lw, -(tip - 13)],
-            [ 2,  -(tip - 1)],
-            [ 0,  -(tip + 1)],
-            [-2,  -(tip - 1)],
-            [-lw, -(tip - 13)],
+            [-lw,           0],
+            [ lw,           0],
+            [ lw,          -arrowBase],
+            [ (arrowHW - 1), -arrowBase],
+            [ 0,            -(tip - 2)],
+            [-(arrowHW - 1), -arrowBase],
+            [-lw,          -arrowBase],
         ];
 
         var steelRot = rotateTranslate(steel, angle);

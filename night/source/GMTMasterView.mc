@@ -162,9 +162,9 @@ class GMTMasterView extends WatchUi.WatchFace {
 
     private function drawDateWindow(dc as Graphics.Dc, day as Number) as Void {
         var dCx   = mCx;
-        var dCy   = (mCy + mR * 0.500).toNumber() - 15;
-        var dW    = (mR * 0.270).toNumber();
-        var dH    = (mR * 0.250).toNumber();
+        var dCy   = (mCy + mR * 0.500).toNumber() - 30;
+        var dW    = (mR * 0.215).toNumber();
+        var dH    = (mR * 0.200).toNumber();
         var dX    = dCx - dW / 2;
         var dY    = dCy - dH / 2;
 
@@ -203,8 +203,8 @@ class GMTMasterView extends WatchUi.WatchFace {
         dc.setColor(0x404040, Graphics.COLOR_TRANSPARENT);
         drawOutline(dc, pts);
 
-        dc.setColor(0x909090, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(dCx, dCy, Graphics.FONT_SMALL, day.toString(),
+        dc.setColor(0x00E5CC, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(dCx, dCy, Graphics.FONT_TINY, day.toString(),
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
@@ -304,95 +304,67 @@ class GMTMasterView extends WatchUi.WatchFace {
     }
 
     private function drawHourHand(dc as Graphics.Dc, angle as Float) as Void {
-        var ca = Math.cos(angle);
-        var sa = Math.sin(angle);
+        // Baton hand: rectangular shaft with flared triangular arrowhead at tip
+        var shaftHW  = (mR * 0.055).toNumber();        // shaft half-width (+15%)
+        var tipDist  = (mR * 0.820).toNumber() - 45;
+        var triH     = (mR * 0.153).toNumber();         // arrowhead height (-10%)
+        var triHW    = (mR * 0.083).toNumber();         // arrowhead half-width (+15%)
+        var shaftTop = tipDist - triH;
 
-        var shaftHW   = (mR * 0.048).toNumber();
-        var circDist  = (mR * 0.355).toNumber();
-        var circR     = (mR * 0.068).toNumber();
-        var triTip    = (mR * 0.820).toNumber() - 45;
-        var triHW     = (mR * 0.032).toNumber();
-        var shaftTopY = circDist - circR;
+        var steel = [
+            [-shaftHW,   0],
+            [ shaftHW,   0],
+            [ shaftHW,  -shaftTop],
+            [ triHW,    -shaftTop],
+            [ 0,        -tipDist],
+            [-triHW,    -shaftTop],
+            [-shaftHW,  -shaftTop],
+        ];
+        var lume = [
+            [-(shaftHW - 2),  0],
+            [ (shaftHW - 2),  0],
+            [ (shaftHW - 2), -shaftTop],
+            [ (triHW - 1),   -shaftTop],
+            [ 0,             -(tipDist - 2)],
+            [-(triHW - 1),   -shaftTop],
+            [-(shaftHW - 2), -shaftTop],
+        ];
 
-        var shaft = [
-            [-shaftHW,  0],
-            [ shaftHW,  0],
-            [ shaftHW, -shaftTopY],
-            [-shaftHW, -shaftTopY],
-        ];
-        var shaftLume = [
-            [-(shaftHW - 3),  0],
-            [ (shaftHW - 3),  0],
-            [ (shaftHW - 3), -shaftTopY],
-            [-(shaftHW - 3), -shaftTopY],
-        ];
-        var shaftRot     = rotateTranslate(shaft,     angle);
-        var shaftLumeRot = rotateTranslate(shaftLume, angle);
+        var steelRot = rotateTranslate(steel, angle);
+        var lumeRot  = rotateTranslate(lume,  angle);
 
         dc.setColor(0x003830, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon(shaftRot);
+        dc.fillPolygon(steelRot);
         dc.setColor(0x00E5CC, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon(shaftLumeRot);
-
-        var circX = (mCx + circDist * sa).toNumber();
-        var circY = (mCy - circDist * ca).toNumber();
-
-        dc.setColor(0x003830, Graphics.COLOR_TRANSPARENT);
-        dc.fillCircle(circX, circY, circR);
-        dc.setColor(0x00E5CC, Graphics.COLOR_TRANSPARENT);
-        dc.fillCircle(circX, circY, circR - 2);
-
-        dc.setColor(0x003830, Graphics.COLOR_TRANSPARENT);
-        dc.setPenWidth(2);
-        for (var j = 0; j < 3; j++) {
-            var spokeAngle = angle + j * (2.0 * Math.PI / 3.0);
-            var lx = (circX + (circR - 1) * Math.sin(spokeAngle)).toNumber();
-            var ly = (circY - (circR - 1) * Math.cos(spokeAngle)).toNumber();
-            dc.drawLine(circX, circY, lx, ly);
-        }
-
-        var triBaseY = -(circDist + circR + 1);
-        var tri = [
-            [-triHW, triBaseY],
-            [ triHW, triBaseY],
-            [ 0,    -triTip],
-        ];
-        var triLume = [
-            [-(triHW - 1), triBaseY + 1],
-            [ (triHW - 1), triBaseY + 1],
-            [ 0,           -(triTip - 2)],
-        ];
-        var triRot     = rotateTranslate(tri,     angle);
-        var triLumeRot = rotateTranslate(triLume, angle);
-
-        dc.setColor(0x003830, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon(triRot);
-        dc.setColor(0x00E5CC, Graphics.COLOR_TRANSPARENT);
-        dc.fillPolygon(triLumeRot);
+        dc.fillPolygon(lumeRot);
     }
 
     private function drawMinuteHand(dc as Graphics.Dc, angle as Float) as Void {
-        var tip  = (mR * 0.775).toNumber();
-        var hw   = (mR * 0.034).toNumber();
-        var lw   = hw - 3;
+        // Minute hand with proportional arrowhead at tip
+        var tip       = (mR * 0.775).toNumber();
+        var hw        = (mR * 0.034).toNumber();
+        var lw        = hw - 2;
+        var arrowH    = (mR * 0.155).toNumber();
+        var arrowHW   = hw + 5;
+        var arrowBase = tip - arrowH;
 
         var steel = [
-            [-hw,  0],
-            [ hw,  0],
-            [ hw, -(tip - 12)],
-            [ 3,  -tip],
-            [ 0,  -(tip + 2)],
-            [-3,  -tip],
-            [-hw, -(tip - 12)],
+            [-hw,       0],
+            [ hw,       0],
+            [ hw,      -arrowBase],
+            [ arrowHW, -arrowBase],
+            [ 0,       -tip],
+            [-arrowHW, -arrowBase],
+            [-hw,      -arrowBase],
         ];
         var lume = [
-            [-lw,  0],
-            [ lw,  0],
-            [ lw, -(tip - 13)],
-            [ 2,  -(tip - 1)],
-            [ 0,  -(tip + 1)],
-            [-2,  -(tip - 1)],
-            [-lw, -(tip - 13)],
+            [-lw,            0],
+            [ lw,            0],
+            [ lw,           -arrowBase],
+            [ (arrowHW - 1), -arrowBase],
+            [ 0,             -(tip - 2)],
+            [-(arrowHW - 1), -arrowBase],
+            [-lw,           -arrowBase],
         ];
 
         var steelRot = rotateTranslate(steel, angle);

@@ -61,15 +61,16 @@ Marker positions: `x = cx + r*sin(angle)`, `y = cy - r*cos(angle)`
 - All others: applied circles
 
 ## Hands
-- Hour: Mercedes design (shaft + circle with 3 spokes + triangular arrowhead). `shaftHW = mR * 0.048`, `circDist = mR * 0.355`, `circR = mR * 0.068`, `triTip = (mR * 0.820) - 45`, `triHW = mR * 0.032`. No tail.
-- Minute: sword shape. `tip = mR * 0.775`, `hw = mR * 0.034`, `lw = hw - 3`. No tail.
+- Hour: Baton design (shaft + flared arrowhead tip, no Mercedes circle). `shaftHW = mR * 0.055`, `tipDist = (mR * 0.820) - 45`, `triH = mR * 0.153` (arrowhead height), `triHW = mR * 0.083` (arrowhead half-width). One-piece 7-point polygon. No tail.
+- Minute: arrowhead shape. `tip = mR * 0.775`, `hw = mR * 0.034`, `lw = hw - 2`, `arrowH = mR * 0.155` (arrowhead height), `arrowHW = hw + 5`. Parallel sides flaring to arrowhead then point. No tail.
 - Second: white, crosses center. Tail circle (`mR * 0.027`) on short side, lollipop (`mR * 0.030`) on long side at `mR * 0.620`. Tip at `mR * 0.855`. Tail at `mR * 0.171`.
 
 ## Date Window
-- Position: centered horizontally, `dCy = mCy + mR * 0.500 - 15` (lower dial)
-- Fixed size: `dW = mR * 0.270`, `dH = mR * 0.250`, corner radius 4px
+- Position: centered horizontally, `dCy = mCy + mR * 0.500 - 30` (lower dial)
+- Fixed size: `dW = mR * 0.215`, `dH = mR * 0.200`, corner radius 4px
+- Font: `FONT_TINY` (one size smaller than FONT_SMALL)
 - Fill inset 1px inside border; inset shadow lines on top and left edges for recessed look
-- Text: `FONT_SMALL`, centered, background `COLOR_TRANSPARENT`
+- Text: `FONT_TINY`, centered, background `COLOR_TRANSPARENT`
 
 ## Day-of-Week Arc Text
 - Positioned in upper dial between 12 o'clock triangle and center
@@ -91,7 +92,7 @@ Marker positions: `x = cx + r*sin(angle)`, `y = cy - r*cos(angle)`
 ## Night / Sleep Face (`night/`)
 - Separate standalone project — not a build variant of the day face
 - Always renders sleep palette: no `mSleepMode` variable, no callbacks, no switching logic
-- Sleep palette: black dial (`0x000000`), cyan-green lume (`0x00E5CC`), dark steel (`0x003830`), dim ticks (`0x0A2828`), gray date box (`0x585858` fill, `0x909090` text), muted day text (`0x505050`), dark rules (`0x303030`)
+- Sleep palette: black dial (`0x000000`), cyan-green lume (`0x00E5CC`), dark steel (`0x003830`), dim ticks (`0x0A2828`), gray date box (`0x585858` fill, `0x00E5CC` lume text), muted day text (`0x505050`), dark rules (`0x303030`)
 - App ID: `c9f2e817-3b5a-4d6c-a018-72e4f9b3c501` (distinct from day face)
 - Build: **Terminal → Run Task → "Build Night PRG"** → `night/bin/garminanalogwatchfacenight.prg`
 - Sideload both PRGs to `GARMIN/APPS/`; select Analog Blue Night as the sleep face in watch settings
