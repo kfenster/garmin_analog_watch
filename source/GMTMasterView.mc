@@ -43,6 +43,7 @@ class GMTMasterView extends WatchUi.WatchFace {
         drawHourMarkers(dc);
         drawDateWindow(dc, info.day);
         drawDayBox(dc, info.day_of_week);
+        drawGMTRing(dc);
         drawHands(dc, clockTime);
         drawCenterDot(dc);
     }
@@ -164,7 +165,7 @@ class GMTMasterView extends WatchUi.WatchFace {
     // All other hours — large applied circle with metallic ring
     private function drawCircleMarker(dc as Graphics.Dc, angle as Float) as Void {
         var dist = mR * 0.744;   // ~4px gap from minute ticks
-        var r    = (mR * 0.075).toNumber();   // larger dots
+        var r    = (mR * 0.068).toNumber();   // slightly smaller dots
         if (r < 5) { r = 5; }
 
         var x = (mCx + dist * Math.sin(angle)).toNumber();
@@ -272,7 +273,7 @@ class GMTMasterView extends WatchUi.WatchFace {
         var n        = label.length();
         var arcR     = mR * 0.780;         // doubled radius = gentler curve
         var arcCy    = mCy + mR * 0.390 - 8;   // arc center below text so curve is gentle
-        var spacing  = 3.0;                // px between characters
+        var spacing  = 3.6;                // px between characters (wider tracking)
         var fontBig  = Graphics.FONT_TINY;
         var fontSm   = Graphics.FONT_XTINY;
         var hBig     = dc.getFontHeight(fontBig).toFloat();
@@ -326,7 +327,7 @@ class GMTMasterView extends WatchUi.WatchFace {
         }
 
         // Draw characters: first letter biased toward outer rule, rest toward inner
-        var dayColor = mSleepMode ? 0x505050 : 0xE8E8DC;
+        var dayColor = mSleepMode ? 0x505050 : 0xD0D0C4;  // slightly dimmed off-white
         dc.setColor(dayColor, Graphics.COLOR_TRANSPARENT);
         var curAngle = startAngle;
         for (var i = 0; i < n; i++) {
@@ -345,6 +346,52 @@ class GMTMasterView extends WatchUi.WatchFace {
     }
 
     // -------------------------------------------------------------------------
+    // GMT 24-hour inner ring (~68% radius)
+    // Numbers 14, 16, 18, 20, 22, 24 mark the PM/night half of the day.
+    // The GMT hand rotates once per 24 hours and points to this ring.
+    // -------------------------------------------------------------------------
+
+    private function drawGMTRing(dc as Graphics.Dc) as Void {
+        var ringR     = mR * 0.680;
+        var ringColor = mSleepMode ? 0x1A4040 : 0x787870;
+        var textColor = mSleepMode ? 0x1A4040 : 0x888880;
+
+        // Thin ring circle
+        dc.setColor(ringColor, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(1);
+        dc.drawCircle(mCx, mCy, ringR.toNumber());
+
+        // Hour tick marks and labels for all 24 hours
+        for (var h = 0; h < 24; h++) {
+            var angle  = h * (2.0 * Math.PI / 24.0);
+            var sa     = Math.sin(angle);
+            var ca     = Math.cos(angle);
+            var isMajor = (h % 6 == 0);
+            var outerR  = ringR + (isMajor ? 5 : 3);
+            var innerR  = ringR - (isMajor ? 5 : 2);
+
+            dc.setColor(ringColor, Graphics.COLOR_TRANSPARENT);
+            dc.setPenWidth(1);
+            dc.drawLine(
+                (mCx + outerR * sa).toNumber(),
+                (mCy - outerR * ca).toNumber(),
+                (mCx + innerR * sa).toNumber(),
+                (mCy - innerR * ca).toNumber()
+            );
+
+            // Label even hours from 14 to 24 (PM/night half of ring)
+            if (h >= 14 && h % 2 == 0) {
+                var labelR = ringR - 11;
+                var lx = (mCx + labelR * sa).toNumber();
+                var ly = (mCy - labelR * ca).toNumber();
+                dc.setColor(textColor, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(lx, ly, Graphics.FONT_XTINY, h.toString(),
+                    Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Hands
     // -------------------------------------------------------------------------
 
@@ -354,20 +401,20 @@ class GMTMasterView extends WatchUi.WatchFace {
         var s = clockTime.sec;
 
         // UTC time from absolute epoch seconds (Time.now() is always UTC)
-        var utcSecs = Time.now().value() % 86400;
-        var utcH    = (utcSecs / 3600) % 12;
-        var utcM    = (utcSecs % 3600) / 60;
+        var utcSecs  = Time.now().value() % 86400;
+        var utcH24   = (utcSecs / 3600) % 24;   // full 24h for GMT ring
+        var utcM     = (utcSecs % 3600) / 60;
 
-        drawHourHand(dc,   (h + m / 60.0)   * (2.0 * Math.PI / 12.0));
-        drawGMTHand(dc,    (utcH + utcM / 60.0) * (2.0 * Math.PI / 12.0));
-        drawMinuteHand(dc, (m + s / 60.0)   * (2.0 * Math.PI / 60.0));
-        drawSecondHand(dc,  s               * (2.0 * Math.PI / 60.0));
+        drawHourHand(dc,   (h + m / 60.0)        * (2.0 * Math.PI / 12.0));
+        drawGMTHand(dc,    (utcH24 + utcM / 60.0) * (2.0 * Math.PI / 24.0));
+        drawMinuteHand(dc, (m + s / 60.0)         * (2.0 * Math.PI / 60.0));
+        drawSecondHand(dc,  s                      * (2.0 * Math.PI / 60.0));
     }
 
     private function drawHourHand(dc as Graphics.Dc, angle as Float) as Void {
         // Baton hand: rectangular shaft with flared triangular arrowhead at tip
-        var shaftHW  = (mR * 0.055).toNumber();        // shaft half-width (+15%)
-        var tipDist  = (mR * 0.820).toNumber() - 45;   // tip distance from center
+        var shaftHW  = (mR * 0.055).toNumber();        // shaft half-width
+        var tipDist  = (mR * 0.600).toNumber();        // tip at ~60% radius
         var triH     = (mR * 0.153).toNumber();         // height of triangular arrowhead (-10%)
         var triHW    = (mR * 0.083).toNumber();         // arrowhead half-width (+15%)
         var shaftTop = tipDist - triH;                  // distance from center to triangle base
@@ -426,7 +473,7 @@ class GMTMasterView extends WatchUi.WatchFace {
         ];
         var ptsRot = rotateTranslate(pts, angle);
 
-        var gmtColor = 0xDD1111;
+        var gmtColor = 0xBB1111;   // slightly muted/darker red
         if (!mSleepMode) {
             dc.setColor(0x111111, Graphics.COLOR_TRANSPARENT);
             dc.fillPolygon(shiftPts(ptsRot, 1, 1));
@@ -437,7 +484,7 @@ class GMTMasterView extends WatchUi.WatchFace {
 
     private function drawMinuteHand(dc as Graphics.Dc, angle as Float) as Void {
         // Minute hand with proportional arrowhead at tip
-        var tip       = (mR * 0.775).toNumber();
+        var tip       = (mR * 0.900).toNumber();   // ~90% radius
         var hw        = (mR * 0.034).toNumber();
         var lw        = hw - 2;
         var arrowH    = (mR * 0.155).toNumber();   // arrowhead section height
@@ -484,7 +531,7 @@ class GMTMasterView extends WatchUi.WatchFace {
         // Lollipop sits near the 6 o'clock rectangular marker radial distance
         var tailLen  = mR * 0.171;              // short counterbalance (5% shorter)
         var lollDist = mR * 0.620;              // lollipop center (near inner edge of 6/9 markers)
-        var lollR    = (mR * 0.030).toNumber(); // lollipop radius
+        var lollR    = (mR * 0.024).toNumber(); // lollipop radius (smaller, less visual weight)
         var tipLen   = mR * 0.855;              // tip (5% shorter)
         var pivotR   = (mR * 0.028).toNumber(); // small pivot circle at center
         var sa = Math.sin(angle);
@@ -499,7 +546,7 @@ class GMTMasterView extends WatchUi.WatchFace {
 
         var tailCircR = (mR * 0.027).toNumber();  // 80% area of lollipop circle
 
-        var secColor = mSleepMode ? 0x00E5CC : 0xFFFFFF;
+        var secColor = mSleepMode ? 0x00E5CC : 0xC8C8C8;  // dimmer light gray (reduced visual weight)
 
         // Shadow (skip in sleep — nothing to shadow against black)
         if (!mSleepMode) {
