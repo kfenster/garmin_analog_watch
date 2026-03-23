@@ -47,53 +47,61 @@ Marker positions: `x = cx + r*sin(angle)`, `y = cy - r*cos(angle)`
 - `<iq:barrels/>` must be present even if empty
 
 ## Design Constants (at mR ≈ 225px for 454px AMOLED display)
-- Dial color: `0x133565` (RGB 19, 53, 101 — matched from reference photo)
+- Dial color: `0x1F4E8C` (day), `0x0B0D10` (night — deep blue-black, not pure black)
 - Dial radius: `mR * 0.92`
 - Minute tick outer: `mR * 0.905`, 5-min inner: `mR * 0.852`, minor inner: `mR * 0.880`
-- Hour markers outer edge: `mR * 0.800` (rects), `mR * 0.822` (circles), triangle touches minute marks at `mR * 0.855`
-- Circle markers: center at `mR * 0.744`, radius `mR * 0.075`
-- Rect markers (3, 6, 9): `outerR = mR * 0.800`, `innerR = mR * 0.616`, `halfW = mR * 0.050`
-- Steel color: `0x686860`, lume fill: `0xF0EEE8`
+- Steel color: `0x686860` (day), lume fill: `0xFFFFFF` (day hands), `0xDCE8D0` / `0xD6E4CC` (night)
 
 ## Hour Markers
-- 12 o'clock: downward triangle, `outerR = mR * 0.855`, `innerR = mR * 0.619`, `halfW = mR * 0.100`
-- 3, 6, 9 o'clock: rectangular bars (identical treatment — no date window at 3)
-- All others: applied circles
+- No outlines or borders on any marker — solid lume fill only
+- 12 o'clock: downward triangle, `outerR = mR * 0.855`, `innerR = mR * 0.664`, `halfW = mR * 0.085`
+- 3, 6, 9 o'clock: rectangular bars. `outerR = mR * 0.800 + 5`, `innerR = mR * 0.630 + 5`, `halfW = mR * 0.046` (15% smaller area than original, shifted 5px outward)
+- All others: applied circles. `dist = mR * 0.744 + 5`, `r = mR * 0.063` (shifted 5px outward)
+- `drawCircleMarker` takes a radius parameter — call with `mR * 0.063` for standard positions
+
+## GMT Ghost Ring
+- Replaces the old full 24-hour ring (which was removed as too cluttered)
+- 12 ticks at 2-hour intervals (no numerals); major ticks at 0/6/12/18h
+- `ringR = mR * 0.740`; tick length ±3px minor, ±5px major; pen width 1
+- Day color: `0x888880`; night color: `0x1A1E1C` (very dim)
+- **Must be drawn before hour markers** (draw order) — otherwise major ticks bleed into markers at 3/6/9/12
 
 ## Hands
-- Hour: Baton design (shaft + flared arrowhead tip, no Mercedes circle). `shaftHW = mR * 0.055`, `tipDist = (mR * 0.820) - 45`, `triH = mR * 0.153` (arrowhead height), `triHW = mR * 0.083` (arrowhead half-width). One-piece 7-point polygon. No tail.
-- Minute: arrowhead shape. `tip = mR * 0.775`, `hw = mR * 0.034`, `lw = hw - 2`, `arrowH = mR * 0.155` (arrowhead height), `arrowHW = hw + 5`. Parallel sides flaring to arrowhead then point. No tail.
-- GMT (UTC): red arrow hand (`0xDD1111`), always red in all modes/palettes. Half minute-hand thickness (`hw = mR * 0.017`). Same arrowhead style as minute hand (`arrowH = mR * 0.120`, `arrowHW = hw + 5`), tip at `mR * 0.775`. Drawn above hour, below minute. UTC time computed from `Time.now().value() % 86400`.
-- Second: white, crosses center. Tail circle (`mR * 0.027`) on short side, lollipop (`mR * 0.030`) on long side at `mR * 0.620`. Tip at `mR * 0.855`. Tail at `mR * 0.171`.
+- Hour: baton design. `shaftHW = mR * 0.055`, `tipDist = mR * 0.600`, `triH = mR * 0.153`, `triHW = mR * 0.083`. One-piece 7-point polygon. No tail.
+- Minute: arrowhead shape. `tip = mR * 0.900`, `hw = mR * 0.034`, `lw = hw - 2`, `arrowH = mR * 0.155`, `arrowHW = hw + 5`. No tail.
+- GMT (UTC): burnt orange day (`0xE06A2B`), dimmed orange night (`0xC46A2D`). `hw = mR * 0.014`, `tip = mR * 0.750 + 8`, `arrowH = mR * 0.138`, `arrowHW = (hw + 5) * 1.15`. Drawn above hour, below minute. UTC angle uses 12-hour formula: `(utcH24 % 12 + utcM / 60.0) * (2π / 12)`.
+- Second: cool gray (`0xB8C2D0` day, `0x7E848A` night). `tipLen = mR * 0.920`, `lollDist = mR * 0.620`, `lollR = mR * 0.020` (hollow circle), `tailLen = mR * 0.171`, `tailCircR = mR * 0.027`.
 
 ## Date Window
-- Position: centered horizontally, `dCy = mCy + mR * 0.500 - 30` (lower dial)
-- Fixed size: `dW = mR * 0.215`, `dH = mR * 0.200`, corner radius 4px
-- Font: `FONT_TINY` (one size smaller than FONT_SMALL)
-- Fill inset 1px inside border; inset shadow lines on top and left edges for recessed look
-- Text: `FONT_TINY`, centered, background `COLOR_TRANSPARENT`
+- Position: `dCy = mCy + mR * 0.500 - 22` (lower dial, centered horizontally)
+- Size: `dW = mR * 0.215`, `dH = mR * 0.200`; bulged sides (convex arc left/right)
+- Day: white fill, `0xCCCCCC` border (pen width 2), black text `FONT_TINY`
+- Night: `0x4A4D50` fill, `0x363840` border (pen width 2), `0xD8DDD8` text
 
 ## Day-of-Week Arc Text
-- Positioned in upper dial between 12 o'clock triangle and center
-- Arc: `arcR = mR * 0.780`, `arcCy = mCy + mR * 0.390 - 8` (arc center below text for gentle curve)
-- First character: `FONT_TINY`, centered vertically; remaining: `FONT_XTINY`, biased toward inner rule
-- Letter spacing: 3px; all uppercase
-- Stainless arc rules above and below text; outer rule = 88% length of inner rule, centered
-- Color: `0xE8E8DC` (matches lume on markers/hands)
+- Arc: `arcR = mR * 0.680` (tighter curve than original), uniform `FONT_XTINY` for all characters
+- Position pinned at runtime: `arcCy = mCy - mR * 0.664 + 12 + rOuter` — outer rule top sits 12px below triangle apex; triangle apex is the current `innerR = mR * 0.664`
+- Letter spacing: 5px; all uppercase; `ruleExtra = 8px`; outer rule = 88% of inner span
+- Day color: `0xE6E6E6`; night color: `0xA7ADB3`
 
 ## Dial Draw Order
-1. `drawDial` — flat blue fill + thin steel ring
-2. `drawMinuteTicks` — 60 ticks in chapter ring
-3. `drawHourMarkers` — triangle, rects, circles
-4. `drawDateWindow` — white inset box, lower center
-5. `drawDayBox` — arc text upper dial
-6. `drawHands` — hour, minute, second (drawn over everything)
-7. `drawCenterDot` — polished steel cap
+1. `drawDial` — filled circle + steel ring (day only)
+2. `drawMinuteTicks` — 60 ticks
+3. `drawGMTGhostRing` — subtle 12-tick ring (must precede markers)
+4. `drawHourMarkers` — triangle, rects, circles
+5. `drawDateWindow` — lower center
+6. `drawDayBox` — arc text upper dial
+7. `drawHands` — hour, GMT, minute, second
+8. `drawCenterDot` — polished steel cap
 
 ## Night / Sleep Face (`night/`)
 - Separate standalone project — not a build variant of the day face
-- Always renders sleep palette: no `mSleepMode` variable, no callbacks, no switching logic
-- Sleep palette: black dial (`0x000000`), cyan-green lume (`0x00E5CC`), dark steel (`0x003830`), dim ticks (`0x0A2828`), gray date box (`0x585858` fill, `0x00E5CC` lume text), muted day text (`0x505050`), dark rules (`0x303030`)
+- Always renders night palette: no `mSleepMode` variable, no callbacks, no switching logic
+- Night palette visual hierarchy: hour/minute hands → markers → GMT hand → date → day text → seconds
+- Night lume: `0xDCE8D0` (hands), `0xD6E4CC` (markers); hand steel border: `0x1A3828`
+- GMT: `0xC46A2D` (orange family, same as day but dimmer — do NOT shift to red or gold)
+- Seconds: `0x7E848A` — visible only when sought, not at a glance
+- Center dot: two-layer only (no specular highlight) — models a matte cap under low ambient light
 - App ID: `c9f2e817-3b5a-4d6c-a018-72e4f9b3c501` (distinct from day face)
 - Build: **Terminal → Run Task → "Build Night PRG"** → `night/bin/garminanalogwatchfacenight.prg`
 - Sideload both PRGs to `GARMIN/APPS/`; select Analog Blue Night as the sleep face in watch settings
