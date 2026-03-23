@@ -1,30 +1,26 @@
 # Analog Blue Watch Face
 
-A Garmin Connect IQ watch face for the Fenix 8 (and Fenix 7 / Epix 2), inspired by the Rolex GMT-Master and Oyster Day-Date Perpetual designs.
+A Garmin Connect IQ watch face for the Fenix 8), inspired by various dive and GMT watches.
+<img width="712" height="782" alt="image" src="https://github.com/user-attachments/assets/9014490b-71ed-4c24-8392-058a32051d89" />
 
 ## Features
-
 - Royal blue dial background
-- Mercedes-style hour hand with shaft, circle, and triangular arrowhead
-- Sword-style minute hand with steel border and lume fill
-- White second hand with lollipop circle
 - Distinctive markers at the 5-minute marks
-- Day-of-week in arced text in the upper dial (small caps, off-white, with stainless rules)
+- Day-of-week in arced text in the upper dial (with stainless rules)
 - Date window in the lower dial with distinctive bulged sides
+- GMT hour hand
 - **Night / lume mode** — a companion watch face (`Analog Blue Night`) with a true black AMOLED dial and glowing cyan-green hands and markers, selectable as the watch's sleep face
 
 ## Compatible Devices
-
 - Fenix 8: `fenix843mm`, `fenix847mm`, `fenix8pro47mm`, `fenix8solar47mm`, `fenix8solar51mm`
-- Fenix 7: `fenix7`, `fenix7pro`, `fenix7s`, `fenix7spro`, `fenix7x`, `fenix7xpro`
-- Epix 2: `epix2`, `epix2pro42mm`, `epix2pro47mm`, `epix2pro51mm`
 
 ## Installing on Your Watch
-
-No app store needed — install directly via USB. There are two watch faces to install: the day face and the night/sleep face.
+No app store needed — sideload directly via USB. There are two watch faces to install:
+* Day face (Garmin's "High Power") 
+* Night/sleep face (Garmin's "Always on") -- on newer Garmin watches, you select a separate watch face as your "Sleep mode" face, so the "Always on" version is avaailable as a separate Night mode face.
 
 ### What you need
-- A USB data cable (the Garmin charging cable is USB-A on the computer end; you may need a USB-A → USB-C adapter to plug into a modern Mac directly — avoid hubs)
+- A USB data cable (the Garmin charging cable is USB-A on the computer end; you may need a USB-A → USB-C adapter to plug into a modern Mac directly — avoid hubs). Copy two separate files:
 - `bin/garminanalogwatchface.prg` — the day face
 - `night/bin/garminanalogwatchfacenight.prg` — the night/sleep face
 
@@ -68,8 +64,4 @@ Requires the [Garmin Connect IQ SDK](https://developer.garmin.com/connect-iq/sdk
 ### Night face
 - Run **Terminal → Run Task → "Build Night PRG"**
 - Output: `night/bin/garminanalogwatchfacenight.prg`
-- The night face is a standalone project in `night/` — always renders the black/cyan-green lume palette with no mode switching
-
-## Future Work
-
-- **GMT / UTC hand** — a red arrow hand showing a second time zone, as on the original GMT-Master II. The hand would complete one revolution every 24 hours and be configurable via Garmin Connect settings.
+- The night face is a standalone project in `night/` — always renders the black/cyan-green lume palette with no mode switching.
